@@ -18,8 +18,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -32,8 +40,10 @@ import org.apache.commons.io.FileUtils;
 
 import com.controller.dao.BookDao;
 import com.controller.dao.CategoryDao;
+import com.controller.dao.UserDao;
 import com.controller.pojo.Book;
 import com.controller.pojo.Category;
+import com.controller.pojo.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -368,6 +378,8 @@ public class BookServlet extends HttpServlet {
                  }
              }
              System.out.println(map);
+             User newUser = new UserDao().getUserById(userid);
+             map.put("phone_number", newUser.getPhoneNumber().toString());
              book.setTitle(map.get("title").toString());
              book.setAuthor(map.get("author").toString());
              book.setPublisher(map.get("publisher").toString());
@@ -386,7 +398,56 @@ public class BookServlet extends HttpServlet {
              book.setCoverImageUrl(imageUrl);
              bookDao.updateBook(book);
              // Handle other processing or send response
-             response.getWriter().println("Request processed successfully");
+             System.out.println(map);
+             String status = null;
+             System.out.println(map);
+             try {
+                 // acquire a secure SMTPs session
+                 Properties pros = new Properties();
+                 pros.put("mail.transport.protocol", "smtps");
+                 pros.put("mail.smtps.host", "smtp.gmail.com");
+                 pros.put("mail.smtps.port", 465);
+                 pros.put("mail.smtps.auth", "true");
+                 pros.put("mail.smtps.quitwait", "false");
+                 Session session
+                     = Session.getDefaultInstance(pros);
+                 session.setDebug(true);
+                 // Wrap a message in session
+                 Message message = new MimeMessage(session);
+                 message.setSubject("Hello world");
+                 map.put("buyer", request.getAttribute("sub").toString());
+                 String body=map.toString();
+                 if (true) {
+                     message.setContent(body, "text/html");
+                 }
+                 else {
+                     message.setText(body);
+                 }
+                 // specify E-mail address of Sender and Receiver
+                 Address sender = new InternetAddress("omkarhalgi90@gmail.com");
+                 Address receiver = new InternetAddress("omkarhalgi50@gmail.com");
+                 message.setFrom(sender);
+                 message.setRecipient(Message.RecipientType.TO,
+                                      receiver);
+                 // sending an E-mail
+                 System.out.println("alsdkflsdk"+map.toString());
+                 try (Transport tt = session.getTransport()) {
+                     // acqruiring a connection to remote server
+                     tt.connect("bookcomproject@gmail.com", "whlh twwg gpym qcgo");
+                     tt.sendMessage(message,
+                                    message.getAllRecipients());
+                     status = "E-Mail Sent Successfully";
+                 }
+             }
+             catch (MessagingException e) {
+                 status = e.toString();
+             }
+//             catch (UnsupportedEncodingException e) {
+//                 status = e.toString();
+//             }
+             // return the status of email
+//             response.getWriter().print(status);
+             response.getWriter().println("Request processed successfully"+status);
          } catch (Exception e) {
              e.printStackTrace();
              response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing request");

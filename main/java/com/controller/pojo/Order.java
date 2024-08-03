@@ -5,7 +5,8 @@ import java.sql.Timestamp;
 
 public class Order {
     private int orderId;
-    private int buyerId;
+    private String buyerId;
+    private int bookId; 
     private BigDecimal totalAmount;
     private String orderStatus;
     private Timestamp orderDate;
@@ -24,12 +25,20 @@ public class Order {
         this.orderId = orderId;
     }
 
-    public int getBuyerId() {
+    public String getBuyerId() {
         return buyerId;
     }
 
-    public void setBuyerId(int buyerId) {
+    public void setBuyerId(String buyerId) {
         this.buyerId = buyerId;
+    }
+
+    public int getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
     }
 
     public BigDecimal getTotalAmount() {
